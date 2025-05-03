@@ -8,20 +8,24 @@ import { COLORS } from '../../theme';
 import Toast from 'react-native-toast-message';
 import { REACT_APP_BASE_URI } from "@env";
 
+
 const RedeemProducts = () => {
+
   const dispatch = useDispatch();
   const { rProducts, loading } = useSelector((state) => state.redeemProducts);
   const { user } = useSelector((state) => state.auth);
-  const farmerId = user?.id;
+  const customer_Id = user?._id;
 
   const [notEnoughModalVisible, setNotEnoughModalVisible] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     dispatch(fetchRedeemProducts());
   }, [dispatch]);
 
   const handleRedeem = (productId) => {
-    if (!farmerId) {
+    if (!customer_Id) {
       Toast.show({
         type: 'error',
         text1: 'Farmer not found',
@@ -30,13 +34,14 @@ const RedeemProducts = () => {
       return;
     }
 
-    dispatch(redeemProduct({ farmerId, redeemProductId: productId }))
+    dispatch(redeemProduct({ customer_Id, redeemProductId: productId }))
       .unwrap()
       .then((res) => {
         Toast.show({
           type: 'success',
           text1: res.message || 'Redeemed successfully',
         });
+        setConfirmModalVisible(false);
       })
       .catch((err) => {
         if (err?.message?.toLowerCase().includes('not enough points')) {
@@ -47,7 +52,14 @@ const RedeemProducts = () => {
             text1: err?.message || 'Redemption failed',
           });
         }
+        setConfirmModalVisible(false);
       });
+  };
+
+  const onConfirmRedeem = () => {
+    if (selectedProduct) {
+      handleRedeem(selectedProduct._id);
+    }
   };
 
   return (
@@ -65,7 +77,7 @@ const RedeemProducts = () => {
                 <Image
                   source={
                     product.r_product_img
-                      ? { uri: `${REACT_APP_BASE_URI}/${product.r_product_img}` }
+                      ? { uri: `${REACT_APP_BASE_URI}/${product.rc_product_img}` }
                       : sampleProductImage
                   }
                   style={styles.rewardImage}
@@ -77,7 +89,10 @@ const RedeemProducts = () => {
                   compact
                   style={styles.useBtn}
                   labelStyle={{ fontSize: 12, flexShrink: 1, textAlign: 'center' }}
-                  onPress={() => handleRedeem(product._id)}
+                  onPress={() => {
+                    setSelectedProduct(product);
+                    setConfirmModalVisible(true);
+                  }}
                 >
                   Use 🪙 {product.requiredPoints} Pts
                 </Button>
@@ -86,7 +101,7 @@ const RedeemProducts = () => {
         )}
       </View>
 
-      {/* Custom Modal */}
+      {/* Not Enough Points Modal */}
       <Portal>
         <Modal visible={notEnoughModalVisible} onDismiss={() => setNotEnoughModalVisible(false)}>
           <View style={{ backgroundColor: 'white', padding: 20, margin: 20, borderRadius: 10 }}>
@@ -94,6 +109,23 @@ const RedeemProducts = () => {
               Oops! You don't have enough points to redeem this product.
             </Text>
             <Button onPress={() => setNotEnoughModalVisible(false)}>Okay</Button>
+          </View>
+        </Modal>
+      </Portal>
+
+      {/* Confirmation Modal */}
+      <Portal>
+        <Modal visible={confirmModalVisible} onDismiss={() => setConfirmModalVisible(false)}>
+          <View style={{ backgroundColor: 'white', padding: 20, margin: 20, borderRadius: 10 }}>
+            <Text style={{ fontSize: 16, marginBottom: 10 }}>
+              Are you sure you want to redeem{' '}
+              <Text style={{ fontWeight: 'bold' }}>{selectedProduct?.name}</Text> for{' '}
+              <Text style={{ color: COLORS.primaryColor }}>{selectedProduct?.requiredPoints} points</Text>?
+            </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+              <Button onPress={() => setConfirmModalVisible(false)}>Cancel</Button>
+              <Button mode="contained" onPress={onConfirmRedeem}>Confirm</Button>
+            </View>
           </View>
         </Modal>
       </Portal>

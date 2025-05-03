@@ -17,8 +17,10 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { fetchCustomerById, updateCustomer } from '../redux/slices/customerSlice';
 import api from '../services/api';
 
+
 export default function MyDetailsScreen({ navigation }) {
 
+    
     const dispatch = useDispatch();
     const { customer, loading } = useSelector((state) => state.customer);
     const { user } = useSelector((state) => state.auth);

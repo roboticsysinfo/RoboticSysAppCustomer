@@ -25,6 +25,12 @@ import { setFarmerDetails } from '../redux/slices/authSlice';
 import FarmerDetailsScreen from '../screens/FarmerDetailsScreen';
 import ReferAndEarnScreen from '../screens/ReferAndEarnScreen';
 import PointTransactionScreen from '../screens/PointTransactionScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import MyRedeemProductsScreen from '../screens/MyRedeemProductsScreen';
+import RegisterOTPScreen from '../screens/RegisterOTPScreen';
+import UpgradePointsScreen from '../screens/UpgradePointsScreen';
+import HelpSupportScreen from '../screens/HelpSupportScreen';
+import ReferralListScreen from '../screens/ReferralListScreen';
 
 
 const Stack = createStackNavigator();
@@ -39,6 +45,7 @@ const AppNavigator = () => {
 
         <Stack.Screen name="SplashScreen" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={PNLoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         <Stack.Screen name="OTP" component={OTPScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Main" component={TabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Products" component={ProductsScreen} options={{ headerShown: true }} />
@@ -60,6 +67,8 @@ const AppNavigator = () => {
 
         <Stack.Screen name="MyReviews" component={MyReviewsScreen} options={{ headerShown: false }} />
 
+        <Stack.Screen name="RedeemProducts" component={MyRedeemProductsScreen} options={{ headerShown: false }} />
+
         <Stack.Screen name="MyDetails" component={MyDetailsScreen} options={{ headerShown: false }} />
 
         <Stack.Screen name="FarmerDetails" component={FarmerDetailsScreen} options={{ headerShown: false }} />
@@ -68,7 +77,15 @@ const AppNavigator = () => {
 
         <Stack.Screen name="Points Transactions" component={PointTransactionScreen} options={{ headerShown: true }} />
 
-        
+        <Stack.Screen name="RegisterOTPScreen" component={RegisterOTPScreen} options={{ headerShown: false }} />
+
+        <Stack.Screen name="UpgradePoints" component={UpgradePointsScreen} options={{ headerShown: false }} />
+
+        <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={{ headerShown: false }} />
+
+        <Stack.Screen name="ReferralList" component={ReferralListScreen} options={{ headerShown: false }} />
+
+
       </Stack.Navigator>
 
     </NavigationContainer>

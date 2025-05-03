@@ -35,7 +35,9 @@ export const registerCustomer = createAsyncThunk(
 // Send OTP to Farmer
 export const sendOTP = createAsyncThunk("auth/sendOTP", async (phoneNumber, { rejectWithValue }) => {
   try {
+
     const response = await api.post('/customer/send-otp', { phoneNumber });
+
     return response.data;
   } catch (error) {
     return rejectWithValue(error.response?.data || { message: "Failed to send OTP" });
@@ -48,7 +50,9 @@ export const sendOTP = createAsyncThunk("auth/sendOTP", async (phoneNumber, { re
 export const loginWithOTP = createAsyncThunk("auth/loginWithOTP", async ({ phoneNumber, otp }, { rejectWithValue }) => {
   
   try {
+
     const response = await api.post('/customer/verify-otp', { phoneNumber, otp });
+
     return response.data;
   } catch (error) {
     return rejectWithValue(error.response.data);

@@ -1,37 +1,77 @@
-import React from 'react';
+// SuggestionCard.js
+
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Divider } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 import { sendFamilyRequest } from '../redux/slices/familyFarmerSlice';
 import { COLORS } from '../../theme';
 import { REACT_APP_BASE_URI } from "@env";
+import { useNavigation } from '@react-navigation/native';
+import api from '../services/api';
+import Toast from 'react-native-toast-message';
 
 const SuggestionCard = ({ person }) => {
+  const navigation = useNavigation();
   const dispatch = useDispatch();
-  const currentUser = useSelector((state) => state.auth.user); // assuming you store the logged-in user in auth slice
+  const currentUser = useSelector((state) => state.auth.user);
+  const [isRequestSent, setIsRequestSent] = useState(false);
+
+  useEffect(() => {
+    const fetchRequestStatus = async () => {
+      try {
+        const res = await api.get(`/customer/family-farmer/request/status/${currentUser._id}/${person._id}`);
+        const status = res.data?.status;
+        setIsRequestSent(status === 'pending' || status === 'accepted');
+      } catch (error) {
+        console.error("Failed to fetch request status", error);
+        setIsRequestSent(false);
+      }
+    };
+
+    if (currentUser?._id && person?._id) {
+      fetchRequestStatus();
+    }
+  }, [person._id, currentUser?._id]);
 
   const handleSendRequest = () => {
-    if (!currentUser?._id) {
-      console.warn("Customer not logged in");
-      return;
-    }
+    if (!currentUser?._id) return;
 
     dispatch(sendFamilyRequest({
       fromCustomer: currentUser._id,
       toFarmer: person._id
-    }));
+    }))
+      .unwrap()
+      .then(() => {
+        setIsRequestSent(true);
+        Toast.show({
+          type: 'success',
+          text1: 'Request Sent!',
+          text2: 'You’ll be notified once accepted 👨‍🌾',
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to send request:", err);
+        Toast.show({
+          type: 'error',
+          text1: 'Request Failed',
+          text2: 'Please try again later.',
+        });
+      });
   };
 
   return (
-
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("FarmerDetails", { farmerId: person._id })}>
       <Image
-        source={{
-          uri: person?.profileImg ? `${REACT_APP_BASE_URI}/${person.profileImg}` : "https://avatar.iran.liara.run/public"
-        }}
+        source={{ uri: person?.profileImg ? `${REACT_APP_BASE_URI}/${person.profileImg}` : "https://avatar.iran.liara.run/public" }}
         style={styles.avatar}
       />
 
+      {person?.isUpgraded && (
+        <View style={styles.upgradedBadge}>
+          <Text style={styles.upgradedText}>🌟 Upgraded</Text>
+        </View>
+      )}
 
       <View style={styles.nameRow}>
         <Text style={styles.name}>{person?.name || "N/A"}</Text>
@@ -46,24 +86,21 @@ const SuggestionCard = ({ person }) => {
       <Divider style={{ marginVertical: 5 }} />
 
       <TouchableOpacity
-        style={styles.connectBtn}
+        style={[styles.connectBtn, isRequestSent && styles.requestSentBtn]}
         onPress={handleSendRequest}
-        disabled={isRequestSent}  // Disable the button once request is sent
+        disabled={isRequestSent}
       >
         <Text style={styles.connectText}>
           {isRequestSent ? 'Request Sent' : '+ Family Farmer'}
         </Text>
       </TouchableOpacity>
-    </View>
-
+    </TouchableOpacity>
   );
 };
 
 export default SuggestionCard;
 
-
 const styles = StyleSheet.create({
-
   card: {
     width: 150,
     backgroundColor: '#fff',
@@ -72,10 +109,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignItems: 'center',
     margin: 5,
-    position: 'relative',
     elevation: 2,
-    marginBottom: 10,
-    borderWidth: 1
+    borderWidth: 1,
+    borderColor: "#ddd",
+    position: 'relative'
   },
   avatar: {
     width: 60,
@@ -106,42 +143,37 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
+  requestSentBtn: {
+    backgroundColor: '#bbb',
+  },
   connectText: {
     color: '#fff',
     fontSize: 12,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  image: {
-    width: 250,
-    height: 250,
-    marginBottom: 16,
-    resizeMode: "contain",
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: "gray",
-    textAlign: "center",
-    paddingHorizontal: 40,
   },
   verifiedBadge: {
     backgroundColor: COLORS.primaryColor,
     borderRadius: 10,
     paddingHorizontal: 4,
     paddingVertical: 2,
+    marginTop: 4
   },
   verifiedText: {
     color: 'white',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  upgradedBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: '#FFD700',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  upgradedText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
   },
 });

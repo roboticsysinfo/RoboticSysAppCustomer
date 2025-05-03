@@ -14,7 +14,9 @@ import farmersReducer from "../redux/slices/farmerSlice";
 import customerReducer from "../redux/slices/customerSlice";
 import searchReducer from "../redux/slices/searchSlice";
 import bannersReducer from "../redux/slices/bannersSlice"
+import customerHelpSupportReducer from "../redux/slices/customerHelpSupportSlice"
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { persistStore, persistReducer } from "redux-persist";
 
 
@@ -47,7 +49,8 @@ const store = configureStore({
     farmers: farmersReducer,
     customer: customerReducer,
     search: searchReducer,
-    banners: bannersReducer
+    banners: bannersReducer,
+    customerHelpSupport: customerHelpSupportReducer
   },
   
   devTools: process.env.NODE_ENV !== "production",

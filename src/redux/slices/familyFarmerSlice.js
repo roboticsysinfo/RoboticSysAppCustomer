@@ -61,9 +61,6 @@ export const cancelFamilyRequest = createAsyncThunk(
 
     try {
 
-      console.log("fromCustomer", fromCustomer);
-      console.log("toFarmer", toFarmer);
-
       const { data } = await api.delete('/family-request/remove', {
         data: { fromCustomer, toFarmer },
       });

@@ -1,12 +1,13 @@
+// ShopCard.js
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { COLORS } from '../../theme';
-import { REACT_APP_BASE_URI } from "@env"
+import { REACT_APP_BASE_URI } from "@env";
 import { useNavigation } from '@react-navigation/native';
 
 const ShopCard = ({ shop }) => {
-
     const navigation = useNavigation();
 
     return (
@@ -17,14 +18,28 @@ const ShopCard = ({ shop }) => {
             />
 
             <View style={styles.shopInfoRow}>
-                <Image
-                    source={{ uri: `${REACT_APP_BASE_URI}/${shop.shop_profile_image}` || 'https://example.com/profile.jpg' }}
-                    style={styles.profileImage}
-                />
+                <View style={styles.imageWrapper}>
+                    <Image
+                        source={{ uri: `${REACT_APP_BASE_URI}/${shop.shop_profile_image}` || 'https://example.com/profile.jpg' }}
+                        style={styles.profileImage}
+                    />
+                </View>
 
                 <View style={styles.textContainer}>
                     <Text style={styles.shopName}>{shop.shop_name || 'Shop Name'}</Text>
-                    <Text style={styles.cityName}>{shop.city_district || 'City Name'}</Text>
+                    <Text style={styles.cityName}>
+
+                        {shop.isFarmerUpgraded && (
+                            <MaterialCommunityIcons
+                                name="shield-star-outline"
+                                size={18}
+                                color="#4CAF50"
+                                style={styles.badgeIcon}
+                            />
+                        )}
+
+                        {shop.city_district || 'City Name'}
+                    </Text>
                 </View>
 
                 <View style={styles.ratingContainer}>
@@ -33,16 +48,15 @@ const ShopCard = ({ shop }) => {
                 </View>
             </View>
 
-            <TouchableOpacity 
-            style={styles.viewShopBtn}
-                onPress={()=> navigation.navigate("Shop Details", { shopId: shop._id })}
+            <TouchableOpacity
+                style={styles.viewShopBtn}
+                onPress={() => navigation.navigate("Shop Details", { shopId: shop._id })}
             >
                 <Text style={styles.viewShopBtnText}>View Shop</Text>
             </TouchableOpacity>
         </View>
     );
 };
-
 
 const styles = StyleSheet.create({
     card: {
@@ -67,12 +81,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 12,
     },
+    imageWrapper: {
+        position: 'relative',
+    },
     profileImage: {
         width: 50,
         height: 50,
         borderRadius: 25,
         marginRight: 12,
         backgroundColor: '#eee',
+    },
+    badgeIcon: {
+        position: 'relative',
+        bottom: -2,
+        right: -2,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 1,
     },
     textContainer: {
         flex: 1,
@@ -109,7 +134,6 @@ const styles = StyleSheet.create({
         color: "#fff",
         textAlign: "center"
     },
-
 });
 
 export default ShopCard;

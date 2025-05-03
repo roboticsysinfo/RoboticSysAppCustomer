@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import { COLORS } from '../../theme'; // Optional, if you have a theme defined
+import { COLORS } from '../../theme';
 import api from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';  // To handle navigation
+import { useNavigation } from '@react-navigation/native';
+
 
 const SelectLocationScreen = () => {
-  const navigation = useNavigation();  // Hook to navigate to main screen
+
+  const navigation = useNavigation();
 
   const [selectedZone, setSelectedZone] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
@@ -16,80 +18,67 @@ const SelectLocationScreen = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    
     setLoading(true);
-    // Simulate an API call
     api.get('/states-cities')
-      .then(response => {
-        setStates(response.data); // Update states list
+      .then(async (response) => {
+        setStates(response.data);
         setLoading(false);
+
+        // Load saved state/district only after states are loaded
+        const savedState = await AsyncStorage.getItem('selectedState');
+        const savedDistrict = await AsyncStorage.getItem('selectedDistrict');
+
+        if (savedState) {
+          setSelectedZone(savedState);
+          const selectedState = response.data.find(state => state._id === savedState);
+          setDistricts(selectedState ? selectedState.districts : []);
+        }
+
+        if (savedDistrict) {
+          setSelectedArea(savedDistrict);
+        }
       })
       .catch(error => {
         console.error("Error fetching states:", error);
         setLoading(false);
       });
-
-    // Load saved selections from AsyncStorage
-    const loadPreviousSelection = async () => {
-      const savedState = await AsyncStorage.getItem('selectedState');
-      const savedDistrict = await AsyncStorage.getItem('selectedDistrict');
-
-      if (savedState) {
-        setSelectedZone(savedState);
-        // If state is already selected, load corresponding districts
-        const selectedState = response.data.find(state => state._id === savedState);
-        setDistricts(selectedState ? selectedState.districts : []);
-      }
-
-      if (savedDistrict) {
-        setSelectedArea(savedDistrict);
-      }
-    };
-
-    loadPreviousSelection();
   }, []);
 
   const handleStateChange = async (stateId) => {
-    // Find selected state and set the districts
     const selectedState = states.find(state => state._id === stateId);
     setDistricts(selectedState ? selectedState.districts : []);
-    setSelectedArea(null);  // Reset area selection
+    setSelectedZone(stateId);
+    setSelectedArea(null);
 
-    // Save state selection to AsyncStorage
     await AsyncStorage.setItem('selectedState', stateId);
-    await AsyncStorage.removeItem('selectedDistrict');  // Clear previously selected district
+    await AsyncStorage.removeItem('selectedDistrict');
   };
 
   const handleDistrictChange = async (district) => {
     setSelectedArea(district);
-
-    // Save district selection to AsyncStorage
     await AsyncStorage.setItem('selectedDistrict', district);
   };
 
   const handleSubmit = async () => {
     if (selectedZone && selectedArea) {
-      // Save selections to AsyncStorage
       await AsyncStorage.setItem('selectedState', selectedZone);
       await AsyncStorage.setItem('selectedDistrict', selectedArea);
-
-      // Navigate to the main screen
-      navigation.navigate('Main'); // Replace with the actual name of your main screen
+      navigation.navigate('Main'); // Make sure 'Main' is the correct screen name
     }
   };
 
   return (
     <View style={styles.container}>
-
       <Image
-        source={require('../assets/map.png')} // Replace with your map icon or background
+        source={require('../assets/map.png')}
         style={styles.imageLocation}
       />
-
-      {/* Instructions Text */}
       <Text style={styles.title}>Select Your Location</Text>
-      <Text style={styles.subTitle}>Switch on your location to farmers, product and shops in your area</Text>
+      <Text style={styles.subTitle}>
+        Switch on your location to see farmers, products and shops in your area
+      </Text>
 
-      {/* State Dropdown */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Your State</Text>
         <Dropdown
@@ -109,7 +98,6 @@ const SelectLocationScreen = () => {
         />
       </View>
 
-      {/* City/District Dropdown */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Your City/District</Text>
         <Dropdown
@@ -129,8 +117,11 @@ const SelectLocationScreen = () => {
         />
       </View>
 
-      {/* Submit Button */}
-      <TouchableOpacity style={styles.submitButton} disabled={!selectedArea} onPress={handleSubmit}>
+      <TouchableOpacity
+        style={[styles.submitButton, { opacity: selectedArea ? 1 : 0.5 }]}
+        disabled={!selectedArea}
+        onPress={handleSubmit}
+      >
         <Text style={styles.submitButtonText}>Let's Go</Text>
       </TouchableOpacity>
 
@@ -151,8 +142,7 @@ const styles = StyleSheet.create({
     height: 150,
     resizeMode: "contain",
     marginBottom: 30,
-    textAlign: "center",
-    marginHorizontal: "auto"
+    alignSelf: "center"
   },
   title: {
     fontSize: 24,
@@ -191,7 +181,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   submitButton: {
-    backgroundColor: COLORS.primaryColor, // Or use any color that fits your theme
+    backgroundColor: COLORS.primaryColor,
     paddingVertical: 15,
     borderRadius: 16,
     marginTop: 30,

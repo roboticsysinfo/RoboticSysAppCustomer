@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import CustomHeader from './CustomHeader';
+import CustomDrawer from '../navigation/CustomDrawer';
+
 
 const MainLayout = ({ children }) => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <View style={styles.container}>
-      <CustomHeader />
+      <CustomHeader openDrawer={() => setDrawerOpen(true)} />
+      <CustomDrawer isOpen={drawerOpen} closeDrawer={() => setDrawerOpen(false)} />
       <View style={styles.content}>
         {children}
       </View>

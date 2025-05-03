@@ -25,10 +25,18 @@ const ManageOrdersScreen = () => {
       rippleColor="rgba(0, 0, 0, .1)"
     >
       <View style={styles.row}>
-        <Image
-          source={{ uri: `${REACT_APP_BASE_URI}/${item.product_image}` }}
-          style={styles.imagePlaceholder}
-        />
+
+        {item.product_image ? (
+          <Image
+            source={{ uri: `${REACT_APP_BASE_URI}${item.product_image}` }}
+            style={styles.imagePlaceholder}
+          />
+        ) : (
+          <Image
+            source={{ uri: "https://placehold.jp/150x150.png" }} // fallback image
+            style={styles.imagePlaceholder}
+          />
+        )}
 
         <View style={styles.infoContainer}>
           <Text style={styles.title}>Order ID: {item.order_id}</Text>
@@ -44,7 +52,7 @@ const ManageOrdersScreen = () => {
             labelStyle={{ color: '#0a9e57', marginLeft: "auto", verticalAlign: "middle" }}
             contentStyle={{ paddingHorizontal: 0 }}
           >
-            See Details <FIcon name="arrow-right-long" size={18}  />
+            See Details <FIcon name="arrow-right-long" size={18} />
           </Button>
         </View>
       </View>

@@ -12,8 +12,11 @@ import { clearMessages, createRequestOrder } from '../redux/slices/orderSlice';
 import { getProductById } from '../redux/slices/productSlice';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Divider, TextInput } from 'react-native-paper';
+import DeliveryPreferenceView from '../components/DeliveryPreferenceView';
+
 
 const ProductDetailsScreen = () => {
+
   const route = useRoute();
   const { productId } = route.params;
   const dispatch = useDispatch();
@@ -167,6 +170,8 @@ const ProductDetailsScreen = () => {
               <Text style={styles.value}>{product?.shop_id?.shop_name ?? 'N/A'}</Text>
             </View>
           </View>
+
+          <DeliveryPreferenceView  farmerId={product?.farmer_id._id}/>
 
           <TouchableOpacity onPress={() => setDetailsExpanded(!detailsExpanded)} style={styles.section}>
             <Text style={styles.sectionTitle}>Product Description</Text>

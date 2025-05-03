@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, ActivityIndicator, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, ActivityIndicator, FlatList, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategories } from '../redux/slices/categorySlice';
@@ -23,18 +23,24 @@ const CategorySlider = () => {
     };
 
     const renderCategoryItem = ({ item }) => (
-        <View
-            onPress={() => navigation.navigate("Category Products", { categoryId: item._id })}
-            style={[styles.categoryItemWrapper, { width: screenWidth / 3 }]}
-        >
-            <View style={styles.categoryItem}>
-                <Image
-                    source={{ uri: `${REACT_APP_BASE_URI_SEC}${item.category_image}` }}
-                    style={styles.categoryImage}
-                />
-                <Text style={styles.categoryName}>{item.name}</Text>
+
+
+        <Pressable onPress={() => navigation.navigate("Category Products", { categoryId: item._id })}>
+
+            <View
+                style={[styles.categoryItemWrapper, { width: screenWidth / 3 }]}
+            >
+                <View style={styles.categoryItem}>
+                    <Image
+                        source={{ uri: `${REACT_APP_BASE_URI_SEC}${item.category_image}` }}
+                        style={styles.categoryImage}
+                    />
+                    <Text style={styles.categoryName}>{item.name}</Text>
+                </View>
             </View>
-        </View>
+
+        </Pressable>
+        
     );
 
     return (

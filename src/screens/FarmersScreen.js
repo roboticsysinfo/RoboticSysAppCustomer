@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,32 +7,47 @@ import { Divider } from 'react-native-paper';
 import { COLORS } from '../../theme';
 import { fetchFarmersByCity } from '../redux/slices/farmerSlice';
 import farmernotfound from '../assets/farmernotfound.png';
-import { REACT_APP_BASE_URI } from "@env"
+import { REACT_APP_BASE_URI } from "@env";
 import { sendFamilyRequest } from '../redux/slices/familyFarmerSlice';
 import Toast from 'react-native-toast-message';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import api from '../services/api';
 
 const SuggestionCard = ({ person }) => {
+  const navigation = useNavigation();
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
-  const [isRequestSent, setIsRequestSent] = React.useState(false);
+  const [isRequestSent, setIsRequestSent] = useState(false);
+  const [requestStatus, setRequestStatus] = useState(null);
 
-  // Check if the request was previously sent when the component mounts
   useEffect(() => {
-    const checkRequestStatus = async () => {
-      const requestStatus = await AsyncStorage.getItem(`requestSent_${person._id}`);
-      if (requestStatus === 'true') {
-        setIsRequestSent(true);
+    const fetchRequestStatus = async () => {
+      try {
+        const res = await api.get(
+          `/customer/family-farmer/request/status/${currentUser._id}/${person._id}`
+        );
+        const status = res.data?.status;
+        if (status === "pending" || status === "accepted") {
+          setIsRequestSent(true);
+          setRequestStatus(status);
+        } else {
+          setIsRequestSent(false);
+          setRequestStatus(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch request status", error);
+        setIsRequestSent(false);
+        setRequestStatus(null);
       }
     };
-    checkRequestStatus();
-  }, [person._id]);
+
+    if (currentUser?._id && person?._id) {
+      fetchRequestStatus();
+    }
+  }, [person._id, currentUser?._id]);
 
   const handleSendRequest = () => {
-    if (!currentUser?._id) {
-      console.warn("Customer not logged in");
-      return;
-    }
+    if (!currentUser?._id) return;
 
     dispatch(sendFamilyRequest({
       fromCustomer: currentUser._id,
@@ -41,7 +56,7 @@ const SuggestionCard = ({ person }) => {
       .unwrap()
       .then(() => {
         setIsRequestSent(true);
-        AsyncStorage.setItem(`requestSent_${person._id}`, 'true'); // Persist request state in AsyncStorage
+        AsyncStorage.setItem(`requestSent_${person._id}`, 'true');
         Toast.show({
           type: 'success',
           position: 'bottom',
@@ -63,9 +78,10 @@ const SuggestionCard = ({ person }) => {
   };
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card}
+      onPress={() => navigation.navigate("FarmerDetails", { farmerId: person._id })}>
       <Image
-        source={{ uri: `${REACT_APP_BASE_URI}/${person.profileImg}` || "https://avatar.iran.liara.run/public" }}
+        source={{ uri: person.profileImg ? `${REACT_APP_BASE_URI}/${person.profileImg}` : "https://avatar.iran.liara.run/public" }}
         style={styles.avatar}
       />
       <View style={styles.nameRow}>
@@ -79,15 +95,15 @@ const SuggestionCard = ({ person }) => {
       <Text style={styles.headline}>{person.city_district}</Text>
       <Divider style={{ marginVertical: 5 }} />
       <TouchableOpacity
-        style={[styles.connectBtn, isRequestSent && styles.requestSentBtn]} // Conditionally apply the button style
+        style={[styles.connectBtn, isRequestSent && styles.requestSentBtn]}
         onPress={handleSendRequest}
-        disabled={isRequestSent}  // Disable the button once request is sent
+        disabled={isRequestSent}
       >
         <Text style={styles.connectText}>
           {isRequestSent ? 'Request Sent' : '+ Family Farmer'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -107,7 +123,6 @@ const FarmersScreen = () => {
           console.log("Error reading district from storage:", error);
         }
       };
-
       getDistrictAndFetch();
     }, [dispatch])
   );
@@ -119,7 +134,14 @@ const FarmersScreen = () => {
 
     const verifiedFarmers = (farmers || [])
       .filter(farmer => farmer.isKYCVerified)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // newest first
+      .sort((a, b) => {
+        // Sort upgraded farmers to the top
+        if (a.isUpgraded && !b.isUpgraded) return -1;
+        if (!a.isUpgraded && b.isUpgraded) return 1;
+
+        // If same upgrade status, sort by latest creation
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
 
     if (verifiedFarmers.length === 0) {
       return (
@@ -259,8 +281,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   requestSentBtn: {
-    backgroundColor: '#d3d3d3', // Gray background when request is sent
-    color:"#333"
+    backgroundColor: '#d3d3d3',
   },
 });
 

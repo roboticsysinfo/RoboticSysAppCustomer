@@ -6,9 +6,11 @@ import Toast from 'react-native-toast-message';
 // 🔄 Thunk to increment referral share & get updated points
 export const incrementReferralShare = createAsyncThunk(
   'reward/incrementReferralShare',
-  async (farmerId, { rejectWithValue }) => {
+  async (customerId, { rejectWithValue }) => {
+    
     try {
-      const res = await api.post('/farmer/referral-share', { farmerId });
+
+      const res = await api.post('/customer/referral-share', { customerId });
 
       // ✅ Show Toast on success
       Toast.show({
@@ -28,14 +30,12 @@ export const incrementReferralShare = createAsyncThunk(
 );
 
 
-// 🔄 Thunk to fetch point transactions by farmerId
+// 🔄 Thunk to fetch point transactions by customerId
 export const fetchPointTransactions = createAsyncThunk(
   "pointTransactions/fetch",
-  async (farmerId, { rejectWithValue }) => {
+  async (customerId, { rejectWithValue }) => {
     try {
-      const res = await api.get(`/farmer/points-transaction/${farmerId}`);
-
-      console.log("points transaction history", res.data)
+      const res = await api.get(`/customer/points-transaction/${customerId}`);
 
       return res.data;
     } catch (err) {
@@ -45,6 +45,7 @@ export const fetchPointTransactions = createAsyncThunk(
 );
 
 const rewardSlice = createSlice({
+
   name: 'reward',
   initialState: {
     points: 0,
@@ -60,11 +61,13 @@ const rewardSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
+
     builder
       .addCase(incrementReferralShare.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
+
       .addCase(incrementReferralShare.fulfilled, (state, action) => {
         state.loading = false;
         state.points = action.payload.points;

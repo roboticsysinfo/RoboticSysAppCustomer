@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchPointTransactions } from "../redux/slices/rewardSlice";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import coinIcon from "../assets/coin.png";
+import { fetchCustomerById } from "../redux/slices/customerSlice";
+
 
 const borderColors = {
   referral: "#2ECC71", // Fresh green - trust & success
@@ -14,20 +16,27 @@ const borderColors = {
   daily_login: "#F1C40F", // Bright golden - reward
   self_register: "#9B59B6", // Purple - action/self effort
   new_product_added: "#1ABC9C", // Teal - newness
+  family_farmer: "darkgreen", 
+  shop_review: "orange"
 };
 
+
 const PointTransactionScreen = () => {
+  
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { customer } = useSelector((state) => state.customer);
   const { pointsTransactions, status, error } = useSelector((state) => state.reward);
+  const customerId = user?._id;
 
-  const farmerId = user?.id;
 
   useEffect(() => {
-    if (farmerId) {
-      dispatch(fetchPointTransactions(farmerId));
+    if (customerId) {
+      dispatch(fetchPointTransactions(customerId));
+      dispatch(fetchCustomerById(customerId));
     }
-  }, [dispatch, farmerId]);
+  }, [dispatch, customerId]);
+
 
   // Function to group transactions by date
   const groupTransactionsByDate = (transactions) => {
@@ -41,20 +50,22 @@ const PointTransactionScreen = () => {
     }, {});
   };
 
+
   const renderItem = ({ item }) => {
     return (
-      <Card style={[styles.card, { borderLeftColor: borderColors[item.type] || "#ccc" }]}>
-        <Card.Content>
+      <View style={[styles.card, { borderLeftColor: borderColors[item.type] || "#ccc" }]}>
+        <View>
           <Text variant="titleMedium" style={styles.points}>
             {item.points > 0 ? `+${item.points}` : item.points} Points
           </Text>
           <Text>{item.type.replace("_", " ").toUpperCase()}</Text>
           <Text>{item.description}</Text>
           <Text style={styles.date}>{new Date(item.createdAt).toLocaleString()}</Text>
-        </Card.Content>
-      </Card>
+        </View>
+      </View>
     );
   };
+
 
   const renderSectionHeader = ({ section: { title } }) => (
     <View style={styles.sectionHeader}>
@@ -62,13 +73,16 @@ const PointTransactionScreen = () => {
     </View>
   );
 
+
   if (status === "loading") {
     return <ActivityIndicator style={{ marginTop: 30 }} />;
   }
 
+
   if (status === "failed") {
     return <Text style={{ margin: 20, color: "red" }}>{error}</Text>;
   }
+
 
   // Group transactions by date
   const groupedTransactions = Object.entries(groupTransactionsByDate(pointsTransactions)).map(
@@ -78,11 +92,12 @@ const PointTransactionScreen = () => {
     })
   );
 
+
   return (
     <>
       <View style={styles.header}>
         <Image source={coinIcon} style={styles.coinIcon} />
-        <Text style={styles.totalPoints}>{user?.points || 0} Points</Text>
+        <Text style={styles.totalPoints}>{customer?.points || 0} Points</Text>
       </View>
 
       {/* Color legend */}
@@ -120,6 +135,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 5,
     backgroundColor: "#fff",
     elevation: 2,
+    padding: 10
   },
   coinIcon: {
     width: 30,

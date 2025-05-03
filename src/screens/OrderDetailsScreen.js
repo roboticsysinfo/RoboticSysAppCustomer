@@ -29,21 +29,33 @@ const OrderDetailsScreen = () => {
     }, [orderId]);
 
     if (loading || !order) {
-        return <ActivityIndicator size={'large'} color={COLORS.primaryColor} style={{marginTop: 60}} />;
+        return <ActivityIndicator size={'large'} color={COLORS.primaryColor} style={{ marginTop: 60 }} />;
     }
 
     return (
 
         <>
 
-            <Appbar.Header style={{ backgroundColor: '#0a9e57',  }}>
+            <Appbar.Header style={{ backgroundColor: '#0a9e57', }}>
                 <Appbar.BackAction onPress={() => navigation.goBack()} color="white" />
                 <Appbar.Content title="Order Details" titleStyle={{ color: 'white' }} />
             </Appbar.Header>
 
+
             <ScrollView contentContainerStyle={styles.container}>
 
-                <Image source={`${REACT_APP_BASE_URI}/${order.product_image}`} style={styles.imagePlaceholder} />
+
+                {order.product_image ? (
+                    <Image
+                        source={{ uri: `${REACT_APP_BASE_URI}${order.product_image}` }}
+                        style={styles.imagePlaceholder}
+                    />
+                ) : (
+                    <Image
+                        source={{ uri : "https://placehold.jp/150x150.png" }} // fallback image
+                        style={styles.imagePlaceholder}
+                    />
+                )}
 
                 <Text style={styles.title}>{order.product_name}</Text>
 
@@ -111,9 +123,9 @@ const styles = StyleSheet.create({
     imagePlaceholder: {
         width: "100%",
         height: 220,
-        backgroundColor: "#ccc",
         borderRadius: 10,
         marginBottom: 20,
+        resizeMode: "cover"
     },
     title: {
         fontSize: 20,

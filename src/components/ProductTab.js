@@ -1,75 +1,34 @@
-import React, { useEffect } from 'react';
-import { ScrollView, StyleSheet, View, Text, Image, ActivityIndicator } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { REACT_APP_BASE_URI } from '@env';
+import React from 'react';
+import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { fetchProductsByShopId } from '../redux/slices/shopSlice';
+import { REACT_APP_BASE_URI } from '@env';
+import { useNavigation } from '@react-navigation/native';
 
-const ProductsTab = ({ shopId }) => {
-  const dispatch = useDispatch();
+const ProductsTab = ({ product }) => {
+  const navigation = useNavigation();
 
-  const { products, status, error } = useSelector((state) => state.shop);
-
-  useEffect(() => {
-    if (shopId) {
-      dispatch(fetchProductsByShopId(shopId));
-    }
-  }, [dispatch, shopId]);
-
-  if (status === 'loading') {
-    return (
-      <View style={styles.emptyContainer}>
-        <ActivityIndicator size="large" color="green" />
-        <Text>Loading products...</Text>
-      </View>
-    );
-  }
-
-  if (status === 'failed') {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={{ color: 'red' }}>Error loading products: {error || 'Unknown error'}</Text>
-      </View>
-    );
-  }
-
-  if (!products || !Array.isArray(products) || products.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text>No products available.</Text>
-      </View>
-    );
-  }
+  const imageUri = product?.product_image
+    ? `${REACT_APP_BASE_URI}${product.product_image}`
+    : 'https://via.placeholder.com/150';
 
   return (
-    <ScrollView style={{ flex: 1 }}>
-      <View style={styles.productsGrid}>
-        {products.map((product, i) => {
-          const imageUri = product?.product_image
-            ? `${REACT_APP_BASE_URI}/${product.product_image}`
-            : 'https://via.placeholder.com/150';
-
-          return (
-            <View key={product._id || i} style={styles.productCard}>
-              <Image
-                source={{ uri: imageUri }}
-                style={styles.product_image}
-                onError={() => console.log('Image load failed:', imageUri)}
-              />
-              <Text style={styles.product_title}>{product.name || 'No name'}</Text>
-              <Text style={styles.product_price}>
-                ₹ {product.price_per_unit || 'N/A'} / {product.unit || 'unit'}
-              </Text>
-              {product.harvest_date && (
-                <Text style={styles.harvest_date}>
-                  <Icon name="calendar" size={16} /> {product.harvest_date.slice(0, 10)}
-                </Text>
-              )}
-            </View>
-          );
-        })}
+    <Pressable onPress={() => navigation.navigate('Product Detail', { productId: product._id })}>
+      <View style={styles.productCard}>
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.product_image}
+        />
+        <Text style={styles.product_title}>{product.name || 'No name'}</Text>
+        <Text style={styles.product_price}>
+          ₹ {product.price_per_unit || 'N/A'} / {product.unit || 'unit'}
+        </Text>
+        {product.harvest_date && (
+          <Text style={styles.harvest_date}>
+            <Icon name="calendar" size={16} /> {product.harvest_date.slice(0, 10)}
+          </Text>
+        )}
       </View>
-    </ScrollView>
+    </Pressable>
   );
 };
 
@@ -85,7 +44,8 @@ const styles = StyleSheet.create({
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'center', // This should be in contentContainerStyle
+    alignItems: 'center', // This should be in contentContainerStyle
     padding: 10,
   },
   productCard: {
@@ -99,9 +59,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
+    margin: 10
   },
   product_image: {
-    height: 120,
+    height: 80,
     width: '100%',
     borderRadius: 8,
     resizeMode: 'cover',

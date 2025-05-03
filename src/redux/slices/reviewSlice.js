@@ -1,8 +1,32 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
+
+// ✅ Submit Review (Async Action)
+
+export const submitReview = createAsyncThunk(
+  "review/submitReview",
+  async (reviewData, { rejectWithValue }) => {
+    try {
+
+      const response = await api.post("/create_review", reviewData);
+
+      if (response.data.success) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data);
+      }
+
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { message: 'Server error' });
+    }
+  }
+);
+
+
 // ✅ 1. Get All Reviews for a Shop
 export const fetchReviews = createAsyncThunk(
+
   'reviews/fetchReviews',
   async (shopId, { rejectWithValue }) => {
     try {
@@ -12,6 +36,7 @@ export const fetchReviews = createAsyncThunk(
       return rejectWithValue(error.response?.data?.message || "Failed to fetch reviews");
     }
   }
+
 );
 
 
@@ -64,7 +89,24 @@ const reviewSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+
     builder
+
+      // ✅ Submit Review
+      .addCase(submitReview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(submitReview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+        state.reviews.push(action.payload.review);
+      })
+      .addCase(submitReview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
       // Fetch Reviews
       .addCase(fetchReviews.pending, (state) => {

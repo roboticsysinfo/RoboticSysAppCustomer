@@ -10,7 +10,6 @@ import { useNavigation } from "@react-navigation/native";
 
 const ProfileScreen = () => {
 
-
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -35,9 +34,10 @@ const ProfileScreen = () => {
 
         <View style={styles.profileInfo}>
           <Text style={styles.name}>{user ? user.name : "N/A"}</Text>
+          <Text style={styles.referralText}>{user ? user.referralCode : "N/A"}</Text>
         </View>
 
-        <TouchableOpacity onPress={() => { navigation.navigate("MyDetails")}}>
+        <TouchableOpacity onPress={() => { navigation.navigate("MyDetails") }}>
           <Icon name="pencil" size={20} color="green" style={styles.editIcon} />
         </TouchableOpacity>
 
@@ -88,7 +88,6 @@ const ProfileScreen = () => {
             onPress={() => navigation.navigate("Orders")}
           />
 
-
           <List.Item
             style={styles.drawerlistItem}
             title={("My Reviews")}
@@ -99,14 +98,19 @@ const ProfileScreen = () => {
 
           <List.Item
             style={styles.drawerlistItem}
+            title={("Referral List")}
+            left={() => <Icon name="chat-processing" size={22} />}
+            right={() => <Icon name="chevron-right" size={22} />}
+            onPress={() => navigation.navigate("ReferralList")}
+          />
+
+          <List.Item
+            style={styles.drawerlistItem}
             title={("Refer & Earn")}
             left={() => <FIcon name="money" size={22} />}
             right={() => <Icon name="chevron-right" size={22} />}
             onPress={() => navigation.navigate("ReferandEarn")}
           />
-
-
-
 
         </List.Section>
 
@@ -163,6 +167,12 @@ const styles = StyleSheet.create({
   },
   settingListContainer: {
     paddingHorizontal: 20
+  },
+  referralText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: 5,
+    color: "gray"
   }
 });
 

@@ -13,8 +13,11 @@ const AboutTab = () => {
     <ScrollView style={{ flex: 1 }}>
 
       <View style={styles.tabContent}>
-        <Title>About Shop</Title>
+
+        <Title style={styles.sectionTitle}>About Shop</Title>
         <Paragraph>{shop.shop_description || "No description available"}</Paragraph>
+
+        
       </View>
 
       <View style={styles.section}>
@@ -101,7 +104,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     marginBottom: 10,
-    fontSize: 18
+    fontSize: 18,
+    fontWeight: "bold"
   },
 
   section: {

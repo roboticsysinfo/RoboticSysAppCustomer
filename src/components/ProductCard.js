@@ -5,6 +5,7 @@ import productImage from "../assets/sampleProduct.png";
 import { useNavigation } from '@react-navigation/native';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import FIcon from "react-native-vector-icons/FontAwesome";
+import { REACT_APP_BASE_URI } from "@env"
 
 const ProductCard = ({ product }) => {
   
@@ -17,7 +18,7 @@ const ProductCard = ({ product }) => {
         <View style={styles.content}>
           <TouchableOpacity onPress={() => navigation.navigate('Product Detail', { productId: product._id })}>
             <Image
-              source={{ uri: product.product_image }}
+              source={{ uri: `${REACT_APP_BASE_URI}${product.product_image}` }}
               style={styles.image}
               resizeMode="contain"
             />

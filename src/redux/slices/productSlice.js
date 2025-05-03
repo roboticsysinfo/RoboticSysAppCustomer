@@ -64,6 +64,24 @@ export const fetchProductsByCategory = createAsyncThunk(
   }
 );
 
+// get category product by location and category id
+
+export const getProductsByCategoryLocation = createAsyncThunk(
+  'products/getByCategoryLocation',
+  async ({ categoryId, city }, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/products/category/${categoryId}?city=${city}`);
+      return response.data.products;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch products'
+      );
+    }
+  }
+);
+
+
+
 // Slice
 const productSlice = createSlice({
   name: 'products',
@@ -114,11 +132,12 @@ const productSlice = createSlice({
         state.error = action.payload;
         state.productByCity = [];
       })
-      
+
       // Fetch products
       .addCase(fetchProducts.pending, (state) => {
         state.status = "loading";
       })
+
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.data = action.payload.products;  // Correctly update state
@@ -130,12 +149,12 @@ const productSlice = createSlice({
         state.error = action.error.message;
       })
 
-
       // Fetch product by ID
       .addCase(getProductById.fulfilled, (state, action) => {
         state.product = action.payload;  // Update selected product
         state.status = 'succeeded';
       })
+
       // Fetch products by farmer ID
       .addCase(getProductByFarmerId.fulfilled, (state, action) => {
         state.productByFarmer = action.payload;
@@ -146,6 +165,7 @@ const productSlice = createSlice({
         state.status = 'failed';
         state.productByFarmer = [];
       })
+
       // Fetch products by category
       .addCase(fetchProductsByCategory.pending, (state) => {
         state.productcategoryStatus = "loading";
@@ -157,7 +177,21 @@ const productSlice = createSlice({
       .addCase(fetchProductsByCategory.rejected, (state, action) => {
         state.productcategoryStatus = "failed";
         state.error = action.payload;
+      })
+
+      .addCase(getProductsByCategoryLocation.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getProductsByCategoryLocation.fulfilled, (state, action) => {
+        state.loading = false;
+        state.categoryProducts = action.payload;
+      })
+      .addCase(getProductsByCategoryLocation.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
+
   },
 });
 

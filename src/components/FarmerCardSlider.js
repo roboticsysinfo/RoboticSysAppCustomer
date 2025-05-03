@@ -1,6 +1,6 @@
 // components/FarmerCardSlider.js
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Pressable } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { COLORS } from '../../theme';
 import { sendFamilyRequest } from '../redux/slices/familyFarmerSlice';
@@ -41,33 +41,40 @@ const FarmerCard = ({ person }) => {
     };
 
     return (
-        <View style={styles.card}>
-            <Image
-                source={{ uri: `${REACT_APP_BASE_URI}/${person.profileImg}` || "https://avatar.iran.liara.run/public" }}
-                style={styles.avatar}
-            />
-            <Text style={styles.name}>{person.name}</Text>
-            <Text style={styles.city}>{person.city_district}</Text>
-            <TouchableOpacity
-                style={[styles.btn, isRequestSent && { backgroundColor: '#aaa' }]}
-                onPress={handleSendRequest}
-                disabled={isRequestSent}
-            >
-                <Text style={styles.btnText}>{isRequestSent ? 'Request Sent' : '+ Family Farmer'}</Text>
-            </TouchableOpacity>
-        </View>
+
+        <Pressable onPress={()=> navigation.navigate("FarmerDetails", { farmerId: person._id })}>
+
+            <View style={styles.card}>
+                <Image
+                    source={{ uri: `${REACT_APP_BASE_URI}/${person.profileImg}` || "https://avatar.iran.liara.run/public" }}
+                    style={styles.avatar}
+                />
+                <Text style={styles.name}>{person.name}</Text>
+                <Text style={styles.city}>{person.city_district}</Text>
+                <TouchableOpacity
+                    style={[styles.btn, isRequestSent && { backgroundColor: '#aaa' }]}
+                    onPress={handleSendRequest}
+                    disabled={isRequestSent}
+                >
+                    <Text style={styles.btnText}>{isRequestSent ? 'Request Sent' : '+ Family Farmer'}</Text>
+                </TouchableOpacity>
+            </View>
+
+        </Pressable>
+
     );
 };
 
 const FarmerCardSlider = () => {
+
     const navigation = useNavigation()
     const { farmers } = useSelector((state) => state.farmers);
     const verifiedFarmers = (farmers || []).filter(f => f.isKYCVerified).slice(0, 10);
 
     return (
 
-
-        <View style={{ paddingHorizontal: 15 , marginTop: 15}}>
+        <View
+            style={{ paddingHorizontal: 15, marginTop: 15 }}>
 
             <View style={styles.headingContainer}>
                 <Text style={styles.heading}>Nearby Verified Farmers</Text>
@@ -99,6 +106,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 8,
     },
+
     card: {
         backgroundColor: '#fff',
         borderRadius: 12,
@@ -107,8 +115,9 @@ const styles = StyleSheet.create({
         width: 140,
         alignItems: 'center',
         elevation: 2,
-        marginBottom: 5
+        marginVertical: 15
     },
+    
     avatar: {
         width: 60,
         height: 60,

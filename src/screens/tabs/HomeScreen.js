@@ -14,10 +14,14 @@ import { COLORS } from '../../../theme';
 import FarmerCardSlider from '../../components/FarmerCardSlider';
 import { fetchFarmersByCity } from '../../redux/slices/farmerSlice';
 import { fetchNotifications } from '../../redux/slices/notificationSlice';
+import { fetchCustomerById } from '../../redux/slices/customerSlice';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const { customer } = useSelector((state) => state.customer);
+  const customerId = user?._id;
 
   const { productByCity, status, error } = useSelector((state) => state.products);  // Select products from Redux store
   const { shops, loading: shopLoading, error: shopError } = useSelector(state => state.shop); // Select shops from Redux store
@@ -25,6 +29,7 @@ const HomeScreen = () => {
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   useEffect(() => {
+
     // Fetch selected district from AsyncStorage if needed
     const getSelectedDistrict = async () => {
       const district = await AsyncStorage.getItem('selectedDistrict');
@@ -46,6 +51,7 @@ const HomeScreen = () => {
   useFocusEffect(
     useCallback(() => {
       dispatch(fetchNotifications());
+      dispatch(fetchCustomerById(customerId));
     }, [dispatch])
   );
 
@@ -53,12 +59,19 @@ const HomeScreen = () => {
   return (
 
     <MainLayout>
+
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
 
+
+        {/* Banners  */}
         <Banner />
 
+
+        {/* Categories   */}
         <CategorySlider style={{ width: "100%" }} />
 
+
+        {/* Products   */}
         {status === 'loading' ? (
           <ActivityIndicator size="large" color={COLORS.primaryColor} />
         ) : status === 'failed' ? (
@@ -68,9 +81,11 @@ const HomeScreen = () => {
         )}
 
 
+        {/* Farmers   */}
         <FarmerCardSlider style={{ marginBottom: 10 }} />
 
 
+        {/* Shops   */}
 
         {shopLoading ? (
           <ActivityIndicator size="large" color={COLORS.primaryColor} style={{ marginTop: 20 }} />
@@ -80,7 +95,10 @@ const HomeScreen = () => {
           <ShopSlider shops={shops} title="Featured Shops" />
         )}
 
+        {/* Shops   */}
+
       </ScrollView>
+
     </MainLayout>
 
   );

@@ -1,9 +1,12 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { navigate } from './navigationService'; // Custom navigation ref (we'll set this up below)
+import { REACT_APP_API_BASE_URL } from "@env"
+
+console.log("REACT_APP_API_BASE_URL", REACT_APP_API_BASE_URL)
 
 const api = axios.create({
-  baseURL: "https://kisaangrowth-backend.onrender.com/api",
+  baseURL: REACT_APP_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

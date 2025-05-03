@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Alert, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import { TextInput, Button, Title, Paragraph, ActivityIndicator } from 'react-native-paper';
+import { COLORS } from '../../theme';
+import appLogo from "../../src/assets/kg-logo.jpg";
 import { useNavigation } from '@react-navigation/native';
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import FIcon from "react-native-vector-icons/FontAwesome6";
 import { useDispatch, useSelector } from 'react-redux';
-import { sendOTP } from '../redux/slices/authSlice'; // adjust path if needed
-import { Button } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
+import { sendOTP } from '../redux/slices/authSlice';
 
 const PNLoginScreen = () => {
 
-  const [phoneNumber, setPhoneNumber] = useState('');
   const navigation = useNavigation();
+  const [phoneNumber, setPhoneNumber] = useState('');
   const dispatch = useDispatch();
   const { otpSent, loading } = useSelector((state) => state.auth);
-
-
 
   const handleSendOTP = () => {
     if (!phoneNumber || phoneNumber.length !== 10) {
@@ -42,72 +40,107 @@ const PNLoginScreen = () => {
     });
   };
 
-
-
   return (
-
-    <View style={styles.container}>
-
-      <Text style={styles.title}>Enter Your Phone Number</Text>
-
-      <View style={styles.inputRow}>
-        <Text style={styles.flag}>+91</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="phone-pad"
-          placeholder="Enter Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          maxLength={10}
-        />
+    <ScrollView contentContainerStyle={styles.container}>
+      
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <Image source={appLogo} style={styles.logo} />
+        </View>
+        <Title style={styles.title}>Welcome to{"\n"}Kissan Growth</Title>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSendOTP}>
-        <FIcon name="arrow-right-long" color="#fff" size={20} />
-      </TouchableOpacity>
+      <View style={styles.form}>
+        <Title style={styles.subTitle}>Login With Phone Number</Title>
+        <Paragraph>We will send you an OTP on this number</Paragraph>
 
-    </View>
+        <TextInput
+          label="Enter Phone Number"
+          mode="flat"
+          style={styles.input}
+          keyboardType="phone-pad"
+          value={phoneNumber}
+          maxLength={10}
+          onChangeText={setPhoneNumber}
+        />
 
+
+        <Button mode='contained' style={styles.button} onPress={handleSendOTP} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            'Send OTP'
+          )}
+        </Button>
+
+        <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+          <Paragraph style={styles.signupText}>
+            Don’t have an account? <Text style={styles.signupLink}>Register Now</Text>
+          </Paragraph>
+        </TouchableOpacity>
+
+      </View>
+    </ScrollView>
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
+    flexGrow: 1,
+    backgroundColor: '#ffffff',
+  },
+  header: {
+    backgroundColor: COLORS.primaryColor,
+    paddingVertical: 60,
+    paddingHorizontal: 30,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
   title: {
-    fontSize: 20,
+    color: '#fff',
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 16,
   },
-  inputRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    alignItems: 'center',
-    paddingBottom: 4,
+  form: {
+    padding: 20,
   },
-  flag: {
-    fontSize: 16,
-    marginRight: 8,
+  subTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   input: {
-    flex: 1,
-    fontSize: 18,
+    marginVertical: 30,
+    backgroundColor: 'transparent',
+  },
+  infoText: {
+    fontSize: 12,
+    color: 'gray',
+    marginTop: 4,
   },
   button: {
-    marginTop: 24,
-    alignSelf: 'flex-end',
-    borderRadius: 50,
-    width: 56,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'green',
+    marginTop: 20,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: COLORS.primaryColor,
+  },
+  signupText: {
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  signupLink: {
+    color: '#000',
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+  logoContainer: {
+    alignItems: 'start',
+    marginBottom: 20,
+  },
+  logo: {
+    width: 150,
+    height: 100,
+    resizeMode: 'contain',
   },
 });
 

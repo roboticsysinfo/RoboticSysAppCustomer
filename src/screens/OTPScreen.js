@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput } from 'react-native';
-import { Text, Button } from 'react-native-paper';
+import { View, StyleSheet, TextInput, Image, ScrollView, StatusBar, SafeAreaView } from 'react-native';
+import { Text, Button, Title, Paragraph } from 'react-native-paper';
 import { useDispatch } from 'react-redux';
 import { loginWithOTP, sendOTP } from '../redux/slices/authSlice';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import appLogo from "../../src/assets/kg-logo.jpg";
+import { COLORS } from '../../theme';
 
 const OTPScreen = () => {
+
   const [otp, setOtp] = useState('');
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const route = useRoute();
   const { phoneNumber } = route.params;
+
 
   const handleVerify = async () => {
     if (otp.length !== 4) {
@@ -25,11 +29,13 @@ const OTPScreen = () => {
     }
 
     try {
+
       const resultAction = await dispatch(loginWithOTP({ phoneNumber, otp }));
+
       if (loginWithOTP.fulfilled.match(resultAction)) {
+
         const { token, user } = resultAction.payload;
 
-        // Store in AsyncStorage
         await AsyncStorage.setItem('token', token);
         await AsyncStorage.setItem('user', JSON.stringify(user));
 
@@ -39,15 +45,14 @@ const OTPScreen = () => {
           text2: `Welcome ${user?.name || ''}!`,
         });
 
-        // Check if the location (state and district) is selected
+
         const selectedState = await AsyncStorage.getItem('selectedState');
         const selectedDistrict = await AsyncStorage.getItem('selectedDistrict');
 
+
         if (!selectedState || !selectedDistrict) {
-          // If location is not selected, navigate to Select Location screen
           navigation.replace('SelectLocation');
         } else {
-          // If location is selected, navigate to Main screen
           navigation.reset({
             index: 0,
             routes: [{ name: 'Main' }],
@@ -96,44 +101,77 @@ const OTPScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Enter your 4-digit code</Text>
-      <Text style={styles.label}>Code</Text>
-      <TextInput
-        style={styles.input}
-        keyboardType="phone-pad"
-        maxLength={4}
-        value={otp}
-        onChangeText={setOtp}
-        placeholder="- - - -"
-        textAlign="center"
-      />
-      <Text style={styles.resend} onPress={handleResend}>
-        Resend Code
-      </Text>
-      <Button mode="contained" onPress={handleVerify} style={styles.button}>
-        ➔
-      </Button>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.primaryColor }}>
+      <StatusBar backgroundColor={COLORS.primaryColor} barStyle="light-content" />
+
+      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Image source={appLogo} style={styles.logo} />
+          </View>
+          <Title style={styles.title}>Welcome to{"\n"}Kissan Growth</Title>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.otpContent} keyboardShouldPersistTaps="handled">
+          <Title style={styles.subTitle}>OTP Sent</Title>
+          <Paragraph>OTP has been sent to {phoneNumber}</Paragraph>
+
+          <TextInput
+            style={styles.input}
+            keyboardType="phone-pad"
+            maxLength={4}
+            value={otp}
+            onChangeText={setOtp}
+            placeholder="- - - -"
+            textAlign="center"
+          />
+
+          <Text style={styles.resend} onPress={handleResend}>
+            Resend Code
+          </Text>
+
+          <Button mode="contained" onPress={handleVerify} style={styles.button}>
+            Verify OTP
+          </Button>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
+  header: {
+    backgroundColor: COLORS.primaryColor,
+    paddingVertical: 60,
+    paddingHorizontal: 30,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    marginBottom: 30,
+  },
+  logoContainer: {
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  logo: {
+    width: 150,
+    height: 100,
+    resizeMode: 'contain',
   },
   title: {
-    fontSize: 20,
+    color: '#fff',
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 8,
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#666',
+  otpContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  subTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   input: {
     fontSize: 28,
@@ -150,8 +188,7 @@ const styles = StyleSheet.create({
   button: {
     alignSelf: 'flex-end',
     borderRadius: 50,
-    width: 56,
-    height: 56,
+    padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'green',

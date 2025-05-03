@@ -46,16 +46,20 @@ export const fetchShopByShopId = createAsyncThunk(
 );
 
 
+// Fetch products by shop ID
 export const fetchProductsByShopId = createAsyncThunk(
   "shop/fetchProductsByShopId",
   async (shopId, { rejectWithValue }) => {
     try {
-
-
+      console.log("shop id redux shop products", shopId);
       const response = await api.get(`/shop-products/${shopId}`);
-      
 
-      return response.data;
+      // Check for success flag in the response
+      if (!response.data.success) {
+        return rejectWithValue(response.data.message); // Reject with the message if success is false
+      }
+
+      return response.data.data; // Return the products if success is true
     } catch (error) {
       console.error("Error fetching products:", error);
       return rejectWithValue(error.response?.data?.message || "Something went wrong");
@@ -140,20 +144,23 @@ const shopSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Fetch products by shop ID
       .addCase(fetchProductsByShopId.pending, (state) => {
-        state.status = "loading";
+        state.status = 'loading';
+        state.products = [];
+        state.error = null;
       })
       .addCase(fetchProductsByShopId.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.products = action.payload; // ✅ Store products in state
+        state.status = 'succeeded';
+        state.products = action.payload;
+        state.error = null;
       })
       .addCase(fetchProductsByShopId.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload;
+        state.status = 'failed';
+        state.products = [];
+        state.error = action.error.message;
       });
 
-      builder
+    builder
       .addCase(fetchShopsByLocation.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -168,7 +175,7 @@ const shopSlice = createSlice({
         state.error = action.payload; // Store the error message
       });
 
-      
+
 
   },
 });

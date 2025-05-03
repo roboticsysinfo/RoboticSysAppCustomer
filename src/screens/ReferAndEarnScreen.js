@@ -9,10 +9,10 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
-import { getFarmerById } from '../redux/slices/authSlice';
 import { fetchRedeemProducts } from '../redux/slices/redeemProductSlice';
 import RedeemProducts from '../components/RedeemProducts';
 import { incrementReferralShare } from '../redux/slices/rewardSlice';
+import { fetchCustomerById } from '../redux/slices/customerSlice';
 
 
 const ReferAndEarnScreen = () => {
@@ -20,30 +20,30 @@ const ReferAndEarnScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const { user, farmerDetails } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  const { customer, loading } = useSelector((state) => state.customer);
   const { rproducts } = useSelector((state) => state.redeemProducts);
 
-  const userId = user?.id;
-  const referralCode = farmerDetails?.referralCode;
-  const points = farmerDetails?.points;
-
-
-  useFocusEffect(
-
-    useCallback(() => {
-      if (userId) {
-        dispatch(getFarmerById(userId));
-      }
-    }, [dispatch, userId])
-
-  );
+  const customerId = user?._id;
+  const referralCode = customer?.referralCode;
+  const points = customer?.points;
 
   useEffect(() => {
-    dispatch(fetchRedeemProducts());
-    if (userId) {
-      dispatch(getFarmerById(userId));
+    if (customerId) {
+      dispatch(fetchCustomerById(customerId));
+      dispatch(fetchRedeemProducts());
     }
-  }, [dispatch, userId]);
+  }, [dispatch, customerId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (customerId) {
+        dispatch(fetchCustomerById(customerId));
+        dispatch(fetchRedeemProducts());
+      }
+    }, [dispatch, customerId])
+  );
+
 
   const handleCopy = () => {
     Clipboard.setString(referralCode);
@@ -55,13 +55,13 @@ const ReferAndEarnScreen = () => {
   };
 
   const shareReferral = async () => {
-    const message = `Join our app and get rewards! Use my referral code: ${referralCode}.\nDownload the app: https://yourappdownloadlink.com`;
+    const message = ` जुड़िए Kissan Growth से – हर खरीद पर कमाएं रिवॉर्ड!: ${referralCode}.\nDownload the app: https://yourappdownloadlink.com`;
 
     try {
       const result = await Share.share({ message });
 
       if (result.action === Share.sharedAction) {
-        const res = await dispatch(incrementReferralShare(userId));
+        const res = await dispatch(incrementReferralShare(customerId));
 
         if (res.payload?.message?.includes("Daily share limit")) {
           Toast.show({
@@ -70,12 +70,13 @@ const ReferAndEarnScreen = () => {
             position: 'bottom',
           });
         } else {
-          dispatch(getFarmerById(userId));
+          dispatch(fetchCustomerById(customerId));
         }
       }
     } catch (error) {
       console.log("Error sharing referral:", error);
     }
+
   };
 
   return (
@@ -150,13 +151,24 @@ const ReferAndEarnScreen = () => {
           <Text style={styles.stepText}>Register yourself on the app and earn 5 points</Text>
         </View>
         <View style={styles.step}>
-          <Icon name="add-circle-outline" size={20} color="#e67e22" />
-          <Text style={styles.stepText}>Add a new crop or product and get 3 points</Text>
+          <Icon name="people-outline" size={20} color="#1abc9c" />
+          <Text style={styles.stepText}>
+            Adopt a Family Farmer and earn 20 points when your request is accepted
+          </Text>
         </View>
+
         <View style={styles.step}>
           <Icon name="pricetag-outline" size={20} color="#e74c3c" />
           <Text style={styles.stepText}>Redeem products using points, points will be deducted</Text>
         </View>
+
+        <View style={styles.step}>
+          <Text style={styles.stepTextImp}>
+            Note: These redeem points are acceptable only at the Kissan Growth App Platforms.
+            These points will not be redeemable or applicable to outside or third parties.
+          </Text>
+        </View>
+
       </View>
 
       <Text style={styles.rewardHeader}>Popular in Reward</Text>
@@ -164,16 +176,20 @@ const ReferAndEarnScreen = () => {
         Redeem Exciting Products with points
       </Text>
 
-      {/* <RedeemProducts /> */}
+      <RedeemProducts />
+
     </ScrollView>
   );
 };
 
+
 const styles = StyleSheet.create({
+
   container: {
     paddingBottom: 100,
     backgroundColor: '#fff',
   },
+
   header: {
     backgroundColor: COLORS.primaryColor,
     padding: 20,
@@ -182,17 +198,20 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
     position: 'relative',
   },
+
   headerText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
     marginTop: 50,
   },
+
   subHeaderText: {
     color: '#fff',
     fontSize: 24,
     fontWeight: '700',
   },
+
   coinsImage: {
     position: 'absolute',
     right: 10,
@@ -201,6 +220,7 @@ const styles = StyleSheet.create({
     height: 80,
     resizeMode: 'contain',
   },
+
   card: {
     margin: 16,
     padding: 16,
@@ -210,6 +230,7 @@ const styles = StyleSheet.create({
     borderColor: "#efefef",
     borderRadius: 10,
   },
+  
   pointsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,6 +316,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 6,
   },
+  stepTextImp:{
+    fontWeight: "bold"
+  }
 });
 
 export default ReferAndEarnScreen;

@@ -19,7 +19,6 @@ const ProductsScreen = () => {
       setSelectedDistrict(district); // Update the state with selectedDistrict
 
     };
-    console.log("district", getSelectedDistrict)
 
     getSelectedDistrict();
   }, []);

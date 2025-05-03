@@ -14,11 +14,18 @@ export const fetchFarmers = createAsyncThunk('farmers/fetchFarmers', async () =>
 
 
 // Get Farmer by ID (Separate state for farmer details)
-export const getFarmerById = createAsyncThunk(
-    "auth/getFarmerById",
+
+export const getFarmerDetailsById = createAsyncThunk(
+    "auth/getFarmerDetailsById",
     async (farmerId, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/farmer/get/${farmerId}`);
+
+
+
+            const response = await api.get(`/get/farmer-details/${farmerId}`);
+
+
+
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || { message: "Failed to fetch farmer" });
@@ -43,6 +50,7 @@ const farmersSlice = createSlice({
     initialState: {
         farmers: [],
         farmerDetails: null,
+        
         loading: false,
         error: null,
     },
@@ -62,15 +70,15 @@ const farmersSlice = createSlice({
             })
 
             // Get Farmer by ID (Separating from user)
-            .addCase(getFarmerById.pending, (state) => {
+            .addCase(getFarmerDetailsById.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(getFarmerById.fulfilled, (state, action) => {
+            .addCase(getFarmerDetailsById.fulfilled, (state, action) => {
                 state.loading = false;
                 state.farmerDetails = action.payload;
             })
-            .addCase(getFarmerById.rejected, (state, action) => {
+            .addCase(getFarmerDetailsById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || "Failed to fetch farmer";
             })
@@ -86,7 +94,8 @@ const farmersSlice = createSlice({
             .addCase(fetchFarmersByCity.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
-            });
+            })
+
 
 
     },

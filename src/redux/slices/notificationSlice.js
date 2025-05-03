@@ -27,7 +27,6 @@ export const markNotificationAsRead = createAsyncThunk(
 
       return notificationId;
     } catch (error) {
-      console.log("❌ Error marking as read:", error);
       return rejectWithValue(error.response?.data || "Failed to mark as read");
     }
   }

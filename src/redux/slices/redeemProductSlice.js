@@ -8,7 +8,8 @@ export const fetchRedeemProducts = createAsyncThunk(
   'redeemProducts/fetchAll',
   async (_, thunkAPI) => {
     try {
-      const res = await api.get('/redeem-products');
+      const res = await api.get('/get/customer/redeem-products');
+
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response.data);
@@ -20,9 +21,9 @@ export const fetchRedeemProducts = createAsyncThunk(
 // Thunk to Redeem a Product
 export const redeemProduct = createAsyncThunk(
   'redeemProducts/redeem',
-  async ({ farmerId, redeemProductId }, thunkAPI) => {
+  async ({ customer_Id, redeemProductId }, thunkAPI) => {
     try {
-      const res = await api.post('/redeem-product', { farmerId, redeemProductId });
+      const res = await api.post('/post/customer/redeem-product', { customer_Id, redeemProductId });
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response.data);
@@ -33,10 +34,10 @@ export const redeemProduct = createAsyncThunk(
 
 //Daily 5 points Reward
 export const rewardDailyPoints = createAsyncThunk(
-  "farmer/rewardDailyPoints",
+  "customer/rewardDailyPoints",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await api.post("/farmer/reward-daily");
+      const res = await api.post("/customer/reward-daily");
 
       // ✅ Show Toast on success
       Toast.show({

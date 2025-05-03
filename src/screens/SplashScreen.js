@@ -38,8 +38,8 @@ const SplashScreen = ({ navigation }) => {
         source={appLogo}
         style={styles.headerImage}
       />
-      <Text style={styles.text}>Kissan Growth</Text>
-      <Text style={styles.subtext}>Customer</Text>
+      {/* <Text style={styles.text}>Kissan Growth</Text>  */}
+      <Text style={styles.subtext}>Customer App</Text>
     </View>
   );
 };

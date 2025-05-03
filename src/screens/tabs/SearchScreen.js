@@ -7,6 +7,7 @@ import { fetchSearchResults } from '../../redux/slices/searchSlice';
 import MainLayout from '../../components/MainLayout';
 import { COLORS } from '../../../theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { REACT_APP_BASE_URI, REACT_APP_BASE_URI_SEC } from '@env'
 
 const SearchScreen = () => {
   const navigation = useNavigation();
@@ -16,22 +17,20 @@ const SearchScreen = () => {
   const dispatch = useDispatch();
   const { results, loading, error } = useSelector(state => state.search);
 
+  
   useEffect(() => {
-    console.log("🔍 Search Params =>", { query, filter, city });
     dispatch(fetchSearchResults({ query, filter, city }));
   }, [query, filter, city, dispatch]);
 
-
-
   const handleNavigation = (item) => {
-
-    if (item.name || item.product_image) {
+    console.log("serach items", item)
+    if (item.shop_id || item.product_image) {
       // Product ke liye
       navigation.navigate("Product Detail", { productId: item._id });
     } else if (item.shop_name || item.shop_profile_image) {
       // Shop ke liye
       navigation.navigate("Shop Details", { shopId: item._id });
-    } else if (item.name && item.profileImg) {
+    } else if (item.profileImg && item.aadharCard) {
       // Farmer ke liye (name aur profileImg dono honge)
       navigation.navigate("FarmerDetails", { farmerId: item._id });
     } else {
@@ -39,21 +38,18 @@ const SearchScreen = () => {
     }
   };
 
-
   // 🔁 Image picker with fallback
   const getImageSource = (item) => {
     let image = "https://placehold.jp/150x150.png";
-    if (item.shop_profile_image) image = item.shop_profile_image;
-    else if (item.product_image) image = item.product_image;
-    else if (item.profileImg) image = item.profileImg;
+    if (item.shop_profile_image) image = `${REACT_APP_BASE_URI}/${item.shop_profile_image}`;
+    else if (item.product_image) image = `${REACT_APP_BASE_URI}${item.product_image}`;
+    else if (item.profileImg) image = `${REACT_APP_BASE_URI}/${item.profileImg}`;
 
-    console.log("🖼️ Image for item:", image);
     return image;
   };
 
   // 🔁 Render search item
   const renderItem = ({ item }) => {
-    console.log("👉 Rendering Search Item:", item);
 
     return (
       <TouchableOpacity onPress={() => handleNavigation(item)}>
@@ -115,14 +111,13 @@ const styles = StyleSheet.create({
     elevation: 1
   },
   itemImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 50,
     marginRight: 10,
-    backgroundColor: "#eee"
   },
   itemTextBold: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
   },

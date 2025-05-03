@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, FlatList, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MIcon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -6,21 +6,39 @@ import FIcon from "react-native-vector-icons/FontAwesome6";
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { COLORS, FONTS } from '../../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchSearchResults } from '../redux/slices/searchSlice';
+import { fetchNotifications } from '../redux/slices/notificationSlice';
+import { fetchCustomerById } from '../redux/slices/customerSlice';
+import { Badge } from 'react-native-paper';
 
 
-const CustomHeader = () => {
+const CustomHeader = ( {openDrawer} ) => {
 
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const { customer, loading } = useSelector((state) => state.customer);
+  const unreadCount = useSelector((state) => state.notifications.unreadCount);
 
   const [state, setState] = useState(null);
   const [district, setDistrict] = useState(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState(null); // No default filter
   const [modalVisible, setModalVisible] = useState(false);
+
+
+  const customerId = user?.id;
+  const points = customer?.points;
+
+  // 🔄 On screen focus: fetch notifications, farmer, orders
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchNotifications());
+      dispatch(fetchCustomerById(customerId));
+    }, [dispatch, customerId])
+  );
 
   useEffect(() => {
     const loadLocation = async () => {
@@ -51,6 +69,12 @@ const CustomHeader = () => {
     <View style={styles.container}>
       {/* Top Row: Location + Bell Icon */}
       <View style={styles.topRow}>
+
+        <TouchableOpacity style={styles.drawerButton}  onPress={openDrawer}>
+          <MIcon name="menu" size={36} color="#fff" />
+        </TouchableOpacity>
+
+
         <TouchableOpacity onPress={() => navigation.navigate('SelectLocation')}>
           <View style={styles.locationWrapper}>
             <Icon name="location-outline" size={32} color="#fff" />
@@ -61,20 +85,29 @@ const CustomHeader = () => {
           </View>
         </TouchableOpacity>
 
-        <View style={{flexDirection: 'row', }}>
+        <View style={{ flexDirection: 'row', }}>
+
 
           <TouchableOpacity
             style={styles.walletButton}
             onPress={() => navigation.navigate("Points Transactions")}
           >
             <MIcon name="wallet-outline" size={32} color="#fff" />
-            {/* {points > 0 && (
-            <Badge style={styles.walletBadge}><FIcon name="coins" size={10} color="white" /> {points || 0}</Badge>
-          )} */}
+            {points > 0 && (
+              <View style={styles.walletBadge}>
+                <FIcon name="coins" size={10} color="white" />
+                <Text style={styles.badgeText}> {points}</Text>
+              </View>
+            )}
           </TouchableOpacity>
+
+
 
           <TouchableOpacity style={styles.notificationButton} onPress={() => navigation.navigate('Notifications')}>
             <Icon name="notifications-outline" size={32} color="#fff" />
+            {unreadCount > 0 && (
+              <Badge style={styles.badge}>{unreadCount}</Badge>
+            )}
           </TouchableOpacity>
 
         </View>
@@ -137,6 +170,11 @@ const CustomHeader = () => {
   );
 };
 
+
+
+export default CustomHeader;
+
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.primaryColor,
@@ -157,6 +195,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  walletBadge: {
+    flex: 1,
+    flexGrow: 1,
+    position: "absolute",
+    top: -10,
+    right: -10,
+    backgroundColor: "#f0a500",
+    borderRadius: 100,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    minWidth: 100,
+    flexDirection: "row", // icon + text in one line
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   deliverToText: {
     fontSize: 12,
     color: '#fff',
@@ -171,6 +225,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  
   searchInputWrapper: {
     flex: 1,
     flexDirection: 'row',
@@ -180,11 +235,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     height: 45,
   },
+
   searchInput: {
     flex: 1,
     fontSize: 14,
     color: '#000',
   },
+
   filterIconWrapper: {
     marginLeft: 10,
     backgroundColor: '#fff',
@@ -193,6 +250,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   searchButtonWrapper: {
     marginLeft: 10,
     backgroundColor: '#fff',
@@ -201,40 +259,86 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+
   modalContent: {
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
     width: '80%',
   },
+
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
+
   modalOption: {
     padding: 10,
     fontSize: 16,
     color: '#333',
     textTransform: 'capitalize',
   },
+
   modalCloseButton: {
     marginTop: 10,
     alignItems: 'center',
   },
+
   modalCloseText: {
     color: 'red',
     fontSize: 16,
   },
-  walletButton:{
-    marginRight: 10
-  }
-});
 
-export default CustomHeader;
+  drawerButton: {
+    marginRight: -30,
+  },
+
+  walletButton: {
+    marginRight: 10
+  },
+  walletBadge: {
+    position: "absolute",
+    top: -15,
+    right: -10,
+    backgroundColor: "#f0a500",
+    borderRadius: 50,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    width: 60,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  badgeText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+
+  notificationButton: {
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: -10,
+    right: -4,
+    backgroundColor: "#DA2528",
+    color: "#fff",
+    fontSize: 12,
+    height: 18,
+    minWidth: 18,
+    textAlign: "center",
+    borderRadius: 9,
+    paddingHorizontal: 4,
+  },
+
+});

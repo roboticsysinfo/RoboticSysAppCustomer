@@ -7,7 +7,7 @@ import { COLORS } from "./theme";
 import Toast, { BaseToast } from 'react-native-toast-message';
 import AuthRehydrateProvider from "./src/components/AuthRehydrateProvider";
 import 'react-native-reanimated';
-
+import StayTimerProvider from "./src/components/StayTimerProvider";
 
 
 const theme = {
@@ -22,20 +22,19 @@ const theme = {
   },
 };
 
-
-  const toastConfig = {
-    info: (props) => (
-      <BaseToast
-        {...props}
-        style={{ borderLeftColor: '#2196F3', height: 80 }} // taller toast
-        contentContainerStyle={{ paddingHorizontal: 15 }}
-        text1Style={{
-          fontSize: 24,
-          fontWeight: 'bold',
-        }}
-      />
-    ),
-  };
+const toastConfig = {
+  info: (props) => (
+    <BaseToast
+      {...props}
+      style={{ borderLeftColor: '#2196F3', height: 80 }} // taller toast
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 24,
+        fontWeight: 'bold',
+      }}
+    />
+  ),
+};
 
 
 export default function App() {
@@ -43,11 +42,16 @@ export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
+
         <PaperProvider theme={theme}>
+
+          <StayTimerProvider />
           <AuthRehydrateProvider />
           <AppNavigator />
-          <Toast  config={toastConfig} />
+          <Toast config={toastConfig} />
+
         </PaperProvider>
+
       </PersistGate>
     </Provider>
   );
